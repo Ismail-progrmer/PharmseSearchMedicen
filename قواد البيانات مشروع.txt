@@ -1,0 +1,156 @@
+create user pharmse identified by work ;
+
+grant connect,resource to mangement ;
+
+
+CREATE TABLE Categories (
+CategoryID NUMBER ,
+CategoryName VARCHAR2(200) NOT NULL,
+ CONSTRAINT PK_Categories
+       PRIMARY KEY (CategoryID)
+);
+
+
+CREATE TABLE Medicines (
+    MedicineID NUMBER,
+MedicineName VARCHAR2(200) NOT NULL,
+    Strength VARCHAR2(200),
+    DosageForm VARCHAR2(50),
+    CategoryID NUMBER(10),
+ CONSTRAINT PK_Medicines
+        PRIMARY KEY (MedicineID),
+   CONSTRAINT FK_Medicines_Categories
+        FOREIGN KEY (CategoryID)
+        REFERENCES Categories(CategoryID)
+);
+CREATE TABLE Pharmacies (
+    PharmaciesID NUMBER,
+   PharmacyName VARCHAR2(100) NOT NULL,
+    UserName VARCHAR2(200) NOT NULL,
+    Password VARCHAR2(200) NOT NULL,
+  Address VARCHAR2(200),
+    Phone VARCHAR2(50),
+   CONSTRAINT PK_Pharmacies
+        PRIMARY KEY (PharmaciesID),
+
+    CONSTRAINT UQ_Pharmacies_UserName
+        UNIQUE (UserName)
+);
+
+
+CREATE TABLE WorkingHours (
+    WorkingHoursID NUMBER,
+    DayOfWeek VARCHAR2(20) NOT NULL,
+    OpenTime DATE,
+    CloseTime DATE,
+    IsOpen NUMBER(1) DEFAULT 1 NOT NULL,
+    PharmaciesID NUMBER NOT NULL,
+    CONSTRAINT FK_WorkingHours_Pharmacies
+        FOREIGN KEY (PharmaciesID)
+        REFERENCES Pharmacies(PharmaciesID),
+
+    CONSTRAINT UQ_Pharmacy_Day
+        UNIQUE (PharmaciesID, DayOfWeek),
+
+    CONSTRAINT CK_WorkingHours_IsOpen
+        CHECK (IsOpen IN (0, 1))
+);
+
+CREATE TABLE PharmacyMedicines (
+    PharmaciesID NUMBER(10) NOT NULL,
+    MedicineID NUMBER(10) NOT NULL,
+    Price DECIMAL(19,2) NOT NULL,
+    Quantity NUMBER(10) NOT NULL,
+    LastUpdate DATE DEFAULT SYSDATE NOT NULL,
+
+    CONSTRAINT PK_PharmacyMedicines
+        PRIMARY KEY (PharmaciesID, MedicineID),
+
+    CONSTRAINT FK_PM_Pharmacies
+        FOREIGN KEY (PharmaciesID)
+        REFERENCES Pharmacies(PharmaciesID),
+
+    CONSTRAINT FK_PM_Medicines
+        FOREIGN KEY (MedicineID)
+        REFERENCES Medicines(MedicineID),
+
+    CONSTRAINT CK_PM_Price
+        CHECK (Price >= 0),
+
+    CONSTRAINT CK_PM_Quantity
+        CHECK (Quantity >= 0)
+);
+
+
+ادخال بيانات الصيدليات
+INSERT INTO Pharmacies VALUES
+(1, 'صيدلية الرحمة 1', 'rahma1', '123', 'سيئون - منطقة WQPR+X5W', '05401183');
+
+INSERT INTO Pharmacies VALUES
+(2, 'صيدلية سلامتك', 'salamtak', '123', 'سيئون - شارع الجزائر - ساحة المستشفى العام', '05401222');
+INSERT INTO Pharmacies VALUES
+(3, 'صيدلية الأسرة كير', 'familycare', '123', 'سيئون - بجانب مسجد الخير', '0770940069');
+
+INSERT INTO Pharmacies VALUES
+(4, 'صيدلية الرائد النموذجية 15', 'alraed15', '123', 'سيئون - منطقة WQPR+V7M', '075447460');
+
+INSERT INTO Pharmacies VALUES
+(5, 'مخزن أدوية بن جديد', 'binjadeed', '123', 'سيئون - سوق سيئون العام', '05402266');
+commit;
+
+
+التصنيفات
+INSERT INTO Categories VALUES (1, 'أدوية الضغط');
+INSERT INTO Categories VALUES (2, 'أدوية السكري');
+INSERT INTO Categories VALUES (3, 'المسكنات');
+INSERT INTO Categories VALUES (4, 'المضادات الحيوية');
+INSERT INTO Categories VALUES (5, 'أدوية المعدة');
+COMMIT
+
+الادوية
+
+INSERT INTO Medicines VALUES (1, 'باراسيتامول', '500 mg', 'أقراص', 3);
+INSERT INTO Medicines VALUES (2, 'بروفين', '400 mg', 'أقراص', 3);
+INSERT INTO Medicines VALUES (3, 'أموكسيسيلين', '500 mg', 'كبسولات', 4);
+INSERT INTO Medicines VALUES (4, 'ميتفورمين', '500 mg', 'أقراص', 2);
+INSERT INTO Medicines VALUES (5, 'جلوكوفاج', '850 mg', 'أقراص', 2);
+INSERT INTO Medicines VALUES (6, 'أملوديبين', '5 mg', 'أقراص', 1);
+INSERT INTO Medicines VALUES (7, 'كابتوبريل', '25 mg', 'أقراص', 1);
+INSERT INTO Medicines VALUES (8, 'أوميبرازول', '20 mg', 'كبسولات', 5);
+INSERT INTO Medicines VALUES (9, 'بانادول', '500 mg', 'أقراص', 3);
+INSERT INTO Medicines VALUES (10, 'أزيثروميسين', '500 mg', 'أقراص', 4);
+
+COMMIT;
+
+الأدوية المتوفرة في كل صيدلية
+
+INSERT INTO PharmacyMedicines VALUES (1, 1, 500, 30, SYSDATE);
+INSERT INTO PharmacyMedicines VALUES (1, 4, 1200, 15, SYSDATE);
+INSERT INTO PharmacyMedicines VALUES (1, 6, 800, 20, SYSDATE);
+
+
+INSERT INTO PharmacyMedicines VALUES (2, 1, 450, 50, SYSDATE);
+INSERT INTO PharmacyMedicines VALUES (2, 3, 1500, 10, SYSDATE);
+INSERT INTO PharmacyMedicines VALUES (2, 8, 900, 25, SYSDATE);
+
+INSERT INTO PharmacyMedicines VALUES (3, 2, 700, 20, SYSDATE);
+INSERT INTO PharmacyMedicines VALUES (3, 5, 1300, 15, SYSDATE);
+INSERT INTO PharmacyMedicines VALUES (3, 7, 600, 30, SYSDATE);
+
+INSERT INTO PharmacyMedicines VALUES (4, 1, 500, 40, SYSDATE);
+INSERT INTO PharmacyMedicines VALUES (4, 9, 600, 35, SYSDATE);
+INSERT INTO PharmacyMedicines VALUES (4, 10, 1800, 12, SYSDATE);
+INSERT INTO PharmacyMedicines VALUES (5, 3, 1600, 20, SYSDATE);
+
+INSERT INTO PharmacyMedicines VALUES (5, 4, 1000, 25, SYSDATE);
+INSERT INTO PharmacyMedicines VALUES (5, 8, 850, 18, SYSDATE);
+COMMIT;
+
+
+رابط المشروع Github
+
+https://github.com/Ismail-progrmer/PharmseSearchMedicen.git
+
+
+
+
